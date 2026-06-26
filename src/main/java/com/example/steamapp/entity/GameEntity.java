@@ -39,4 +39,9 @@ public class GameEntity {
     public int getDiscountPercentage() { return discountPercentage; }
     public List<String> getVibes() { return vibes; }
     public String getMatchReason() { return matchReason; }
+
+    
+    public void setVibes(List<String> vibes) { 
+        this.vibes = vibes; 
+    }
 }
