@@ -21,6 +21,7 @@ public class SteamApiService {
     @Cacheable(value = "userLibraries", key = "#steamId")
     public SteamApiResponse getOwnedGames(String steamId) {
         System.out.println("CACHE MISS: Fetching fresh data from Steam API for ID: " + steamId);
+        System.out.println("VERIFYING API KEY IS LOADED: " + apiKey);
         
         String url = "http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={key}&steamid={steamId}&format=json&include_appinfo=1";
         

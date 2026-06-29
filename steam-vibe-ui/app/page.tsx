@@ -12,9 +12,15 @@ interface GameRecommendation {
   matchReason: string;
 }
 
+interface RecommendationResponse {
+  recommended: GameRecommendation[];
+  owned: GameRecommendation[];
+}
+
 export default function Home() {
   const [steamId, setSteamId] = useState('');
-  const [recommendations, setRecommendations] = useState<GameRecommendation[]>([]);
+  const [vibe, setVibe] = useState('cozy');
+  const [data, setData] = useState<RecommendationResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,17 +28,17 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setRecommendations([]);
+    setData(null);
 
     try {
-      const response = await fetch(`http://localhost:8080/api/recommendations/${steamId}`);
-      const data = await response.json();
-      console.log(data)
+      const response = await fetch(`http://localhost:8080/api/recommendations/${steamId}?vibe=${vibe}`);
+      const result = await response.json();
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch recommendations');
+        throw new Error(result.error || 'Failed to fetch recommendations');
       }
 
-      setRecommendations(data);
+      setData(result);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -44,63 +50,85 @@ export default function Home() {
     <main className="min-h-screen bg-slate-900 text-slate-100 p-8">
       <div className="max-w-4xl mx-auto space-y-8">
         
-        {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
             Steam Vibe Engine
           </h1>
-          <p className="text-slate-400">Discover what to play next based on your library and vibes.</p>
         </div>
 
-        {/* Search Bar */}
         <form onSubmit={fetchRecommendations} className="flex gap-4 max-w-xl mx-auto">
           <input
             type="text"
-            placeholder="Enter your 17-digit Steam ID..."
+            placeholder="Steam ID..."
             value={steamId}
             onChange={(e) => setSteamId(e.target.value)}
-            className="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700 focus:outline-none focus:border-blue-500 transition-colors"
+            className="flex-1 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700"
+            required
+          />
+          <input
+            type="text"
+            placeholder="Desired Vibe"
+            value={vibe}
+            onChange={(e) => setVibe(e.target.value)}
+            className="w-1/3 px-4 py-3 rounded-lg bg-slate-800 border border-slate-700"
             required
           />
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold transition-colors disabled:opacity-50"
+            className="px-6 py-3 bg-blue-600 rounded-lg font-semibold"
           >
             {loading ? 'Scanning...' : 'Analyze'}
           </button>
         </form>
 
-        {/* Error Message */}
         {error && (
           <div className="p-4 bg-red-900/50 border border-red-500 rounded-lg text-red-200 text-center">
             {error}
           </div>
         )}
 
-        {/* Results Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-8">
-          {recommendations.map((game) => (
-            <div key={game.appId} className="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-4 shadow-lg">
-              <div className="flex justify-between items-start">
-                <h2 className="text-xl font-bold">{game.name}</h2>
-                <div className="text-right">
-                  <p className="text-lg font-bold text-green-400">${game.currentPrice}</p>
-                </div>
-              </div>
-              
-              <p className="text-slate-400 text-sm italic">"{game.matchReason}"</p>
-              
-              <div className="flex flex-wrap gap-2">
-                {game.vibes.map((vibe, index) => (
-                  <span key={index} className="px-3 py-1 bg-slate-700 text-blue-300 text-xs rounded-full font-medium">
-                    {vibe}
-                  </span>
+        {data && (
+          <div className="space-y-12 pt-8">
+            <section>
+              <h2 className="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">Recommended for You</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {data.recommended.map((game) => (
+                  <div key={game.appId} className="bg-slate-800 p-6 rounded-xl border border-blue-500/30">
+                    <div className="flex justify-between items-start">
+                      <h3 className="text-xl font-bold">{game.name}</h3>
+                      <p className="text-green-400 font-bold">${game.currentPrice}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {game.vibes.map((v, i) => (
+                        <span key={i} className="px-3 py-1 bg-slate-700 text-blue-300 text-xs rounded-full">{v}</span>
+                      ))}
+                    </div>
+                  </div>
                 ))}
+                {data.recommended.length === 0 && <p className="text-slate-400">No new recommendations found for this vibe.</p>}
               </div>
-            </div>
-          ))}
-        </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">Already in your Library</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {data.owned.map((game) => (
+                  <div key={game.appId} className="bg-slate-900 p-6 rounded-xl border border-slate-700 opacity-60">
+                    <h3 className="text-xl font-bold text-slate-400">{game.name}</h3>
+                    <p className="text-slate-500 text-sm mt-2">{game.matchReason}</p>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {game.vibes.map((v, i) => (
+                        <span key={i} className="px-3 py-1 bg-slate-800 text-slate-500 text-xs rounded-full">{v}</span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                {data.owned.length === 0 && <p className="text-slate-400">You do not own any games matching this vibe.</p>}
+              </div>
+            </section>
+          </div>
+        )}
 
       </div>
     </main>

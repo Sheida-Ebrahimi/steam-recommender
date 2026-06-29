@@ -1,6 +1,7 @@
 package com.example.steamapp.service;
 
 import com.example.steamapp.dto.GameRecommendation;
+import com.example.steamapp.dto.RecommendationResponse;
 import com.example.steamapp.dto.SteamApiResponse;
 import com.example.steamapp.dto.SteamGame;
 import com.example.steamapp.entity.GameEntity;
@@ -22,7 +23,7 @@ public class RecommendationEngineService {
         this.gameRepository = gameRepository;
     }
 
-    public List<GameRecommendation> generateRecommendations(String steamId, String desiredVibe) {
+    public RecommendationResponse generateRecommendations(String steamId, String desiredVibe) {
         SteamApiResponse steamData = steamApiService.getOwnedGames(steamId);
 
         Set<Integer> ownedAppIds = steamData.response().games().stream()
@@ -31,8 +32,12 @@ public class RecommendationEngineService {
 
         List<GameEntity> dbCatalog = gameRepository.findAll();
 
-        return dbCatalog.stream()
-                .filter(game -> game.getVibes() != null && game.getVibes().stream().anyMatch(v -> v.equalsIgnoreCase(desiredVibe)))
+        List<GameEntity> matchingVibeGames = dbCatalog.stream()
+                .filter(game -> game.getVibes() != null && game.getVibes().stream()
+                        .anyMatch(v -> v.toLowerCase().contains(desiredVibe.toLowerCase())))
+                .collect(Collectors.toList());
+
+        List<GameRecommendation> recommended = matchingVibeGames.stream()
                 .filter(game -> !ownedAppIds.contains(Integer.parseInt(game.getAppId())))
                 .map(game -> new GameRecommendation(
                         game.getAppId(),
@@ -44,5 +49,20 @@ public class RecommendationEngineService {
                         game.getMatchReason()
                 ))
                 .collect(Collectors.toList());
+
+        List<GameRecommendation> owned = matchingVibeGames.stream()
+                .filter(game -> ownedAppIds.contains(Integer.parseInt(game.getAppId())))
+                .map(game -> new GameRecommendation(
+                        game.getAppId(),
+                        game.getName(),
+                        game.getCurrentPrice(),
+                        game.getOriginalPrice(),
+                        game.getDiscountPercentage(),
+                        game.getVibes(),
+                        "Already in your Steam Library"
+                ))
+                .collect(Collectors.toList());
+
+        return new RecommendationResponse(recommended, owned);
     }
 }

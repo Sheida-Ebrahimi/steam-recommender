@@ -1,11 +1,9 @@
 package com.example.steamapp.controller;
 
-import com.example.steamapp.dto.GameRecommendation;
+import com.example.steamapp.dto.RecommendationResponse;
 import com.example.steamapp.service.RecommendationEngineService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/recommendations")
@@ -18,11 +16,11 @@ public class RecommendationController {
     }
 
     @GetMapping("/{steamId}")
-    public ResponseEntity<List<GameRecommendation>> getRecommendations(
+    public ResponseEntity<RecommendationResponse> getRecommendations(
             @PathVariable String steamId,
             @RequestParam(required = false, defaultValue = "cozy") String vibe) {
         
-        List<GameRecommendation> recommendations = engineService.generateRecommendations(steamId, vibe);
-        return ResponseEntity.ok(recommendations);
+        RecommendationResponse response = engineService.generateRecommendations(steamId, vibe);
+        return ResponseEntity.ok(response);
     }
 }
