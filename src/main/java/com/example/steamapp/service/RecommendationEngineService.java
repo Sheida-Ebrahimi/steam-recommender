@@ -15,24 +15,24 @@ import java.util.stream.Collectors;
 public class RecommendationEngineService {
 
     private final SteamApiService steamApiService;
-    private final GameRepository gameRepository; // Inject the repository
+    private final GameRepository gameRepository;
 
     public RecommendationEngineService(SteamApiService steamApiService, GameRepository gameRepository) {
         this.steamApiService = steamApiService;
         this.gameRepository = gameRepository;
     }
 
-    public List<GameRecommendation> generateRecommendations(String steamId) {
+    public List<GameRecommendation> generateRecommendations(String steamId, String desiredVibe) {
         SteamApiResponse steamData = steamApiService.getOwnedGames(steamId);
 
         Set<Integer> ownedAppIds = steamData.response().games().stream()
                 .map(SteamGame::appId)
                 .collect(Collectors.toSet());
 
-        // Fetch the catalog from PostgreSQL
         List<GameEntity> dbCatalog = gameRepository.findAll();
 
         return dbCatalog.stream()
+                .filter(game -> game.getVibes() != null && game.getVibes().stream().anyMatch(v -> v.equalsIgnoreCase(desiredVibe)))
                 .filter(game -> !ownedAppIds.contains(Integer.parseInt(game.getAppId())))
                 .map(game -> new GameRecommendation(
                         game.getAppId(),

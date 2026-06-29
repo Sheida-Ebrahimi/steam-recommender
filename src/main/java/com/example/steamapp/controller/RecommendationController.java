@@ -3,16 +3,11 @@ package com.example.steamapp.controller;
 import com.example.steamapp.dto.GameRecommendation;
 import com.example.steamapp.service.RecommendationEngineService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-// @CrossOrigin(origins = "http://localhost:3000")
 @RequestMapping("/api/recommendations")
 public class RecommendationController {
 
@@ -23,8 +18,11 @@ public class RecommendationController {
     }
 
     @GetMapping("/{steamId}")
-    public ResponseEntity<List<GameRecommendation>> getRecommendations(@PathVariable String steamId) {
-        List<GameRecommendation> recommendations = engineService.generateRecommendations(steamId);
+    public ResponseEntity<List<GameRecommendation>> getRecommendations(
+            @PathVariable String steamId,
+            @RequestParam(required = false, defaultValue = "cozy") String vibe) {
+        
+        List<GameRecommendation> recommendations = engineService.generateRecommendations(steamId, vibe);
         return ResponseEntity.ok(recommendations);
     }
 }
