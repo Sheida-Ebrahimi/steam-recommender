@@ -24,16 +24,21 @@ public class VibeSyncService {
         List<GameEntity> games = gameRepository.findAll();
 
         for (GameEntity game : games) {
-            try {
-                PythonVibeResponse response = pythonVibeClient.getVibes(game.getAppId());
+            if (game.getVibes() == null || game.getVibes().isEmpty()) {
+                try {
+                    PythonVibeResponse response = pythonVibeClient.getVibes(game.getAppId());
 
-                if (response != null && response.vibes() != null && !response.vibes().isEmpty()) {
-                    game.setVibes(response.vibes());
-                    gameRepository.save(game);
-                    System.out.println("Updated vibes for " + game.getName() + ": " + response.vibes());
+                    if (response != null && response.vibes() != null && !response.vibes().isEmpty()) {
+                        game.setVibes(response.vibes());
+                        gameRepository.save(game);
+                        System.out.println("Updated vibes for " + game.getName() + ": " + response.vibes());
+                    }
+                    
+                    Thread.sleep(2000);
+                    
+                } catch (Exception e) {
+                    System.err.println("Failed to update vibes for " + game.getName());
                 }
-            } catch (Exception e) {
-                System.err.println("Failed to update vibes for " + game.getName());
             }
         }
     }

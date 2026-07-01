@@ -94,15 +94,25 @@ export default function Home() {
               <h2 className="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">Recommended for You</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {data.recommended.map((game) => (
-                  <div key={game.appId} className="bg-slate-800 p-6 rounded-xl border border-blue-500/30">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-xl font-bold">{game.name}</h3>
-                      <p className="text-green-400 font-bold">${game.currentPrice}</p>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {game.vibes.map((v, i) => (
-                        <span key={i} className="px-3 py-1 bg-slate-700 text-blue-300 text-xs rounded-full">{v}</span>
-                      ))}
+                  <div key={game.appId} className="bg-slate-800 rounded-xl overflow-hidden border border-blue-500/30 shadow-lg flex flex-col">
+                    <img 
+                      src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/header.jpg`}
+                      alt={game.name}
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/1e293b/475569?text=No+Image+Available';
+                      }}
+                    />
+                    <div className="p-6 flex-1 flex flex-col">
+                      <div className="flex justify-between items-start">
+                        <h3 className="text-xl font-bold">{game.name}</h3>
+                        <p className="text-green-400 font-bold">${game.currentPrice}</p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-auto pt-4">
+                        {game.vibes.map((v, i) => (
+                          <span key={i} className="px-3 py-1 bg-slate-700 text-blue-300 text-xs rounded-full font-medium">{v}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -114,13 +124,23 @@ export default function Home() {
               <h2 className="text-2xl font-bold mb-6 border-b border-slate-700 pb-2">Already in your Library</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {data.owned.map((game) => (
-                  <div key={game.appId} className="bg-slate-900 p-6 rounded-xl border border-slate-700 opacity-60">
-                    <h3 className="text-xl font-bold text-slate-400">{game.name}</h3>
-                    <p className="text-slate-500 text-sm mt-2">{game.matchReason}</p>
-                    <div className="flex flex-wrap gap-2 mt-4">
-                      {game.vibes.map((v, i) => (
-                        <span key={i} className="px-3 py-1 bg-slate-800 text-slate-500 text-xs rounded-full">{v}</span>
-                      ))}
+                  <div key={game.appId} className="bg-slate-900 rounded-xl overflow-hidden border border-slate-700 opacity-60 shadow-lg flex flex-col grayscale hover:grayscale-0 transition-all duration-300">
+                    <img 
+                      src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/header.jpg`}
+                      alt={game.name}
+                      className="w-full h-32 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/0f172a/334155?text=Owned';
+                      }}
+                    />
+                    <div className="p-4 flex-1 flex flex-col">
+                      <h3 className="text-lg font-bold text-slate-400">{game.name}</h3>
+                      <p className="text-slate-500 text-sm mt-1">{game.matchReason}</p>
+                      <div className="flex flex-wrap gap-2 mt-auto pt-4">
+                        {game.vibes.map((v, i) => (
+                          <span key={i} className="px-3 py-1 bg-slate-800 text-slate-500 text-xs rounded-full">{v}</span>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 ))}
