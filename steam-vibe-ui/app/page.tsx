@@ -95,14 +95,20 @@ export default function Home() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {data.recommended.map((game) => (
                   <div key={game.appId} className="bg-slate-800 rounded-xl overflow-hidden border border-blue-500/30 shadow-lg flex flex-col">
-                    <img 
-                      src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/header.jpg`}
-                      alt={game.name}
-                      className="w-full h-48 object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://placehold.co/600x400/1e293b/475569?text=No+Image+Available';
-                      }}
-                    />
+<img 
+  src={`https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/header.jpg`}
+  alt={game.name}
+  referrerPolicy="no-referrer"
+  className="w-full h-48 object-cover transition-transform duration-300 group-hover:scale-105"
+  onError={(e) => {
+    const target = e.target as HTMLImageElement;
+    if (target.src.includes('header.jpg')) {
+      target.src = `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${game.appId}/capsule_616x353.jpg`;
+    } else {
+      target.src = 'https://placehold.co/600x400/1e293b/475569?text=No+Image+Available';
+    }
+  }}
+/>
                     <div className="p-6 flex-1 flex flex-col">
                       <div className="flex justify-between items-start">
                         <h3 className="text-xl font-bold">{game.name}</h3>
